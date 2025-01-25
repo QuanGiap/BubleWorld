@@ -4,21 +4,31 @@ using UnityEngine;
 
 public class Gravity : MonoBehaviour
 {
-    public float gravityForce = 9.81f;
+    public Transform planet; // Reference to the planet
+    public float gravityStrength = 10f; // Strength of gravity pull
+    public float rotationSpeed = 10f; // Speed of alignment with gravity
 
-    // Update is called once per frame
-    void Update()
+    private Rigidbody rb;
+
+    void Start()
     {
-        // No need to update anything here for gravity
+        rb = GetComponent<Rigidbody>();
+        rb.useGravity = false; // Disable Unity's default gravity
+        rb.constraints = RigidbodyConstraints.FreezeRotation; // Prevent unwanted rotation
     }
 
-    void OnTriggerStay(Collider other)
+    void FixedUpdate()
     {
-        Rigidbody rb = other.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            Vector3 directionToCenter = (transform.position - other.transform.position).normalized;
-            rb.AddForce(directionToCenter * gravityForce * rb.mass);
-        }
+        if (!planet) return;
+
+        // Calculate direction towards the planet's center
+        Vector3 gravityDirection = (planet.position - transform.position).normalized;
+
+        // Apply gravity force
+        rb.AddForce(gravityDirection * gravityStrength, ForceMode.Acceleration);
+
+        // Align player "up" direction with planet's gravity
+        Quaternion targetRotation = Quaternion.FromToRotation(transform.up, -gravityDirection) * transform.rotation;
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
     }
 }

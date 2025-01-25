@@ -4,51 +4,72 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    Transform m_transform;
-    Rigidbody rb;
-    public float speed = 1.0f;
-    public Camera playerCamera;
-    public float jumpForce = 5.0f;
+    public Transform planet; // Reference to the planet
+    public float moveSpeed = 5f; // Player movement speed
+    public float rotationSpeed = 10f; // Player rotation speed
+    public float jumpForce = 8f; // Jump force
+    public float groundDistanceThreshold = 1.2f; // Distance to detect "grounded" state
+
+    private Rigidbody rb;
+    private Camera mainCamera;
     private bool isGrounded;
 
-    // Start is called before the first frame update
     void Start()
     {
-        m_transform = GetComponent<Transform>();
         rb = GetComponent<Rigidbody>();
+        mainCamera = Camera.main;
     }
-    
-    // Update is called once per frame
-    void Update()
+
+    void FixedUpdate()
     {
-        float moveHorizontal = Input.GetAxis("Horizontal");
-        float moveVertical = Input.GetAxis("Vertical");
+        CheckGround();
+        MovePlayer();
+        Jump();
+    }
 
-        Vector3 forward = playerCamera.transform.forward;
-        Vector3 right = playerCamera.transform.right;
+    void CheckGround()
+    {
+        if (!planet) return;
 
-        // Keep the movement on the horizontal plane
-        forward.y = 0f;
-        right.y = 0f;
-        forward.Normalize();
-        right.Normalize();
-        Vector3 movement = (forward * moveVertical + right * moveHorizontal).normalized;
-        rb.AddForce(movement * speed);
-        // Jump
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        // Calculate distance from the player to the planet’s surface
+        float distanceToPlanet = Vector3.Distance(transform.position, planet.position);
+        float planetRadius = planet.localScale.x * 0.5f; // Assuming the planet is a sphere
+
+        // Player is grounded if they are close enough to the planet's surface
+        isGrounded = distanceToPlanet <= (planetRadius + groundDistanceThreshold);
+    }
+
+    void MovePlayer()
+    {
+        if (!mainCamera) return;
+
+        // Get input for movement
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+
+        // Calculate camera-relative movement
+        Vector3 camForward = Vector3.ProjectOnPlane(mainCamera.transform.forward, transform.up).normalized;
+        Vector3 camRight = Vector3.ProjectOnPlane(mainCamera.transform.right, transform.up).normalized;
+        Vector3 moveDirection = (camForward * vertical + camRight * horizontal).normalized;
+
+        // Apply movement
+        rb.MovePosition(rb.position + moveDirection * moveSpeed * Time.fixedDeltaTime);
+
+        // Rotate player towards movement direction
+        if (moveDirection != Vector3.zero)
         {
-            rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection, transform.up);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
         }
     }
-    void OnCollisionStay(Collision collision)
-    {
-        // Check if the player is on the ground
-        isGrounded = true;
-    }
 
-    void OnCollisionExit(Collision collision)
+    void Jump()
     {
-        // Check if the player is not on the ground
-        isGrounded = false;
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            // Get gravity direction (opposite of the planet's pull)
+            Vector3 gravityDirection = (transform.position - planet.position).normalized;
+            rb.AddForce(gravityDirection * jumpForce, ForceMode.Impulse);
+        }
     }
 }
