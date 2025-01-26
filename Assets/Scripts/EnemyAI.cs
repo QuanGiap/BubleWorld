@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public class EnemyAI : MonoBehaviour
@@ -11,10 +10,11 @@ public class EnemyAI : MonoBehaviour
     public float gravityStrength = 10f;  // Gravity strength
     public float rotationSpeed = 5f;  // Rotation speed for smooth turning
     public float stopDistance = 2f;  // Distance to stop before considering "reached"
-    public bool startChase= false;  // Distance to stop before considering "reached"
-
+    private bool startChase= false;  // Distance to stop before considering "reached"
+    private bool enoughDistant= false;  // Distance to stop before considering "reached"
     private Rigidbody rb;
-
+    // use weapons action to register
+    public Weapon weapon;
     void Start()
     {
         // Get the Rigidbody for physics-based movement
@@ -36,6 +36,7 @@ public class EnemyAI : MonoBehaviour
     // Move the enemy towards the player while staying on the planet's surface
     void MoveTowardsPlayer()
     {
+        if(!enoughDistant){
         // Get the direction from the enemy to the player
         Vector3 directionToPlayer = (player.position - transform.position).normalized;
 
@@ -47,13 +48,20 @@ public class EnemyAI : MonoBehaviour
 
         // Rotate towards the movement direction
         Quaternion targetRotation = Quaternion.LookRotation(surfaceDirection, transform.up);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
-
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+        }
         // Check if we are close enough to the player to stop
         if (Vector3.Distance(transform.position, player.position) < stopDistance)
         {
-            // You can add behavior for what happens when the enemy reaches the player (e.g., attack)
-            Debug.Log("Enemy reached the player!");
+            if (weapon != null)
+            {
+
+            }
+            enoughDistant = true;
+        }
+        else
+        {
+            enoughDistant = false;
         }
     }
     private void OnTriggerEnter(Collider other)

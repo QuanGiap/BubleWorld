@@ -48,8 +48,8 @@ public class PlayerMovement : MonoBehaviour
         float vertical = Input.GetAxis("Vertical");
 
         // Calculate camera-relative movement
-        Vector3 camForward = Vector3.ProjectOnPlane(mainCamera.transform.forward, transform.up).normalized;
-        Vector3 camRight = Vector3.ProjectOnPlane(mainCamera.transform.right, transform.up).normalized;
+        Vector3 camForward = Vector3.ProjectOnPlane(transform.forward, transform.up).normalized;
+        Vector3 camRight = Vector3.ProjectOnPlane(transform.right, transform.up).normalized;
         Vector3 moveDirection = (camForward * vertical + camRight * horizontal).normalized;
 
         // Apply movement
