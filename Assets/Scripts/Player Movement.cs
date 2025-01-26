@@ -45,11 +45,11 @@ public class PlayerMovement : MonoBehaviour
         float vertical = Input.GetAxis("Vertical");
         if(vertical<0)vertical = 0;
        
-        Vector3 moveDirection = (transform.forward * vertical + transform.right * horizontal).normalized;
+        Vector3 moveDirection = ((transform.forward * vertical )+ (transform.right * horizontal)).normalized;
         
 
         // Apply movement
-        rb.MovePosition(rb.position + moveDirection * moveSpeed * Time.fixedDeltaTime);
+        rb.MovePosition(rb.position + moveDirection * (moveSpeed * Time.fixedDeltaTime));
 
         // Rotate player towards movement direction
         if (moveDirection != Vector3.zero)
