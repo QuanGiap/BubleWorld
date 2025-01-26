@@ -8,11 +8,11 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeed = 5f; // Player movement speed
     public float rotationSpeed = 10f; // Player rotation speed
     public float jumpForce = 8f; // Jump force
-    public float groundDistanceThreshold = 1.2f; // Distance to detect "grounded" state
 
     private Rigidbody rb;
     private Camera mainCamera;
     private bool isGrounded;
+
 
     void Start()
     {
@@ -22,21 +22,18 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        CheckGround();
         MovePlayer();
         Jump();
     }
 
-    void CheckGround()
+
+    private void OnCollisionStay(Collision collision)
     {
-        if (!planet) return;
-
-        // Calculate distance from the player to the planet’s surface
-        float distanceToPlanet = Vector3.Distance(transform.position, planet.position);
-        float planetRadius = planet.localScale.x * 0.5f; // Assuming the planet is a sphere
-
-        // Player is grounded if they are close enough to the planet's surface
-        isGrounded = distanceToPlanet <= (planetRadius + groundDistanceThreshold);
+        isGrounded = true;
+    }
+    private void OnCollisionExit(Collision collision)
+    {
+        isGrounded=false;
     }
 
     void MovePlayer()
@@ -46,11 +43,10 @@ public class PlayerMovement : MonoBehaviour
         // Get input for movement
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
-
-        // Calculate camera-relative movement
-        Vector3 camForward = Vector3.ProjectOnPlane(transform.forward, transform.up).normalized;
-        Vector3 camRight = Vector3.ProjectOnPlane(transform.right, transform.up).normalized;
-        Vector3 moveDirection = (camForward * vertical + camRight * horizontal).normalized;
+        if(vertical<0)vertical = 0;
+       
+        Vector3 moveDirection = (transform.forward * vertical + transform.right * horizontal).normalized;
+        
 
         // Apply movement
         rb.MovePosition(rb.position + moveDirection * moveSpeed * Time.fixedDeltaTime);
@@ -65,7 +61,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Jump()
     {
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             // Get gravity direction (opposite of the planet's pull)
             Vector3 gravityDirection = (transform.position - planet.position).normalized;
