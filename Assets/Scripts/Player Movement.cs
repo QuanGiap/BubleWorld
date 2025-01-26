@@ -11,7 +11,7 @@ public class PlayerMovement : MonoBehaviour
 
     private Rigidbody rb;
     private Camera mainCamera;
-    private bool isGrounded;
+    public bool isGrounded;
 
 
     void Start()
@@ -61,7 +61,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Jump()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        if (Input.GetKey(KeyCode.Space) && isGrounded)
         {
             // Get gravity direction (opposite of the planet's pull)
             Vector3 gravityDirection = (transform.position - planet.position).normalized;
