@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
+        planet = GameObject.Find("icosphere").transform;
         rb = GetComponent<Rigidbody>();
         mainCamera = Camera.main;
     }

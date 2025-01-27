@@ -13,11 +13,12 @@ public class PlayerModel : MonoBehaviour
     public SpriteRenderer spriteRenderer;
     public PlayerMovement playerMovement;
     private bool isHoldGun;
-    private float delayHold = 5;
+    private float delayHold = 1;
     // Start is called before the first frame update
     void Start()
     {
-        
+        playerMovement = GetComponent<PlayerMovement>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void LateUpdate()

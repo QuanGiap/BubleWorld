@@ -10,8 +10,9 @@ public class Gravity : MonoBehaviour
 
     private Rigidbody rb;
 
-    void Start()
+    void Awake()
     {
+        planet = GameObject.Find("icosphere").transform;
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false; // Disable Unity's default gravity
         rb.constraints = RigidbodyConstraints.FreezeRotation; // Prevent unwanted rotation
