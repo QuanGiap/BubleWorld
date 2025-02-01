@@ -4,44 +4,69 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    Transform m_transform;
-    Rigidbody rb;
-    // Start is called before the first frame update
+    public Transform planet; // Reference to the planet
+    public float moveSpeed = 5f; // Player movement speed
+    public float rotationSpeed = 10f; // Player rotation speed
+    public float jumpForce = 8f; // Jump force
+
+    private Rigidbody rb;
+    private Camera mainCamera;
+    public bool isGrounded;
+
+
     void Start()
     {
-        m_transform = GetComponent<Transform>();
+        planet = GameObject.Find("icosphere").transform;
         rb = GetComponent<Rigidbody>();
+        mainCamera = Camera.main;
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            rb.MovePosition(Vector3.forward);
-        }
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            rb.MovePosition(Vector3.back);
-        }
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            rb.MovePosition(Vector3.left);
-        }
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            rb.MovePosition(Vector3.right);
-        }
-        //player jump
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            //rb.AddForce(Vector3.up);
-        }
-
+        MovePlayer();
+        Jump();
     }
 
-    // Update is called once per frame
-    void Update()
+
+    private void OnCollisionStay(Collision collision)
     {
+        isGrounded = true;
+    }
+    private void OnCollisionExit(Collision collision)
+    {
+        isGrounded=false;
+    }
+
+    void MovePlayer()
+    {
+        if (!mainCamera) return;
+
+        // Get input for movement
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+        if(vertical<0)vertical = 0;
+       
+        Vector3 moveDirection = ((transform.forward * vertical )+ (transform.right * horizontal)).normalized;
         
+
+        // Apply movement
+        rb.MovePosition(rb.position + moveDirection * (moveSpeed * Time.fixedDeltaTime));
+
+        // Rotate player towards movement direction
+        if (moveDirection != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection, transform.up);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+        }
+    }
+
+    void Jump()
+    {
+        if (Input.GetKey(KeyCode.Space) && isGrounded)
+        {
+            // Get gravity direction (opposite of the planet's pull)
+            Vector3 gravityDirection = (transform.position - planet.position).normalized;
+            rb.AddForce(gravityDirection * jumpForce, ForceMode.Impulse);
+        }
     }
 }
